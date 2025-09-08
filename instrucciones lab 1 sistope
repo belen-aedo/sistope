@@ -1,0 +1,24 @@
+extensiòn es .sh
+
+ejemplo basico en bash:
+sudo echo 'hello' -> guardar en example.sh
+
+comando por consola 
+bash example.sh
+
+ps y awk 
+
+se deben hacer scrips 
+
+generador = esjecutar comando de bash ps, buscar que hace cada cosa
+
+filtrar = debemos filtrar cual es la cpu minima
+
+en la consulta se debe colocar | lo cual significa los pipes
+
+no se pueden usar break, formato .zip para entrega  maximo de entrega los jueves a las 23:59
+
+//entrada:
+//salida:
+//descripcion: 
+en cada subrutinas
