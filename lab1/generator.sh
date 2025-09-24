@@ -1,11 +1,11 @@
 #!/bin/bash
 
 
-#Entradas: -i intervalo, -t tiempo total
-#Salidas: datos de procesos con timestamp
-#Descripción: se capturan los procesos cada X segundos
+#entradas: -i intervalo, -t tiempo total
+#salidas: datos de procesos con el tiempo marcado
+#descripción: se capturan los procesos que se realizan cada X segundos
 
-#variabls
+#variables
 intervalo=""
 tiempo=""
 
@@ -27,15 +27,15 @@ fi
 #haremos un ciclo para procesar por el tiempo dado 
 tiempo_actual=0
 while [ $tiempo_actual -lt $tiempo ]; do
-    # Obtener timestamp
-    timestamp=$(date "+%Y-%m-%dT%H:%M:%S%z")
+    # Obtener el marcador de tiempo
+    aux_tiempo=$(date "+%Y-%m-%dT%H:%M:%S%z")
     
-    #ejecutamos el ps y agregar timestamp a cada línea
+    #ejecutamos el ps y le agregamos tiempo a cada linea
     ps -eo pid=,uid=,comm=,pcpu=,pmem= --sort=-%cpu | while read linea; do
         if [ -n "$linea" ]; then
-            #usamos awk para formatear 
-            linea_limpia=$(echo "$linea" | awk '{print $1 "\t" $2 "\t" $3 "\t" $(NF-1) "\t" $NF}')
-            echo "$timestamp	$linea_limpia"
+            #usamos awk para quitar espacios que se encuentren al inicio y final y que estos esten de sobra
+            lineas=$(echo "$linea" | awk '{print $1 "\t" $2 "\t" $3 "\t" $(NF-1) "\t" $NF}')
+            echo "$aux_tiempo	$lineas"
         fi
     done
     
