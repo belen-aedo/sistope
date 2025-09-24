@@ -22,3 +22,12 @@ no se pueden usar break, formato .zip para entrega  maximo de entrega los jueves
 //salida:
 //descripcion: 
 en cada subrutinas
+
+ Ejecutar ps y añadir timestamp a cada línea
+    # ps -eo: formato personalizado de salida
+    # pid=: ID del proceso sin header
+    # uid=: ID del usuario sin header  
+    # comm=: nombre del comando sin header
+    # pcpu=: porcentaje de CPU sin header
+    # pmem=: porcentaje de memoria sin header
+    # --sort=-%cpu: ordenar por CPU descendente
