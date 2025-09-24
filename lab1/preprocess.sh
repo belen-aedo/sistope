@@ -1,19 +1,19 @@
 #!/bin/bash
 
 
-#Entradas: datos por stdin, --iso8601
-#Salidas: datos validados
-#Descripcion: ve que los datos de entrada sean validos
+#entradas: datos anteriores de generator
+#salidas: datos validados
+#descripcion: ve que los datos de entrada sean validos, en temas de formato y tipo de datos y los convierte a ISO 8601
 
-# Variables
+#variable de bandera
 iso8601=false
 
-# vemos los argumentos
+#vemos los argumentos
 while [ $# -gt 0 ]; do
     case $1 in #si $1 que es el argumento actual
     #es --iso8601 activa la bandera de true
         --iso8601) iso8601=true; shift ;; #ya que se valido eliminamos este argumento. para que pase al siguiente
-        *) echo "El uso correcto es -> $0 [--iso8601]"; exit 1 ;; #si tiene un argumento que no reconoce termina mostrando el mensaje como un error
+        *) echo "error como entrega los datos"; exit 1 ;; #si tiene un argumento que no reconoce termina mostrando el mensaje de error
     esac
 done
 
