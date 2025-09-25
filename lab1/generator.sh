@@ -14,7 +14,7 @@ while [ $# -gt 0 ]; do
     case $1 in #asignamos a intervalo el valor de la pocision 2
         -i) intervalo=$2; shift 2 ;; #con el shif eliminamos los primeros 2 argumentos
         -t) tiempo=$2; shift 2 ;; #el tiempo lo asignamos el valor de la posicion 2 , ya que eliminamos los primeros ingresariamos al tiempo ejemplo -> -t 2
-        *) echo "Uso: $0 -i INTERVALO -t TIEMPO"; exit 1 ;;
+        *) echo "debe ingresar: $0 -i INTERVALO -t TIEMPO"; exit 1 ;;
     esac
 done
 

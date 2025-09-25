@@ -1,18 +1,24 @@
 #!/bin/bash
 
+
 # Entradas: datos por stdin, -o archivo de salida
 # Salidas: archivo TSV con reporte final incluyendo metadatos
-# Descripción: agrega metadatos (fecha, usuario, host) y escribe toda la entrada
+# Descripcion: agrega metadatos (fecha, usuario, host) y escribe toda la entrada
 #              en un archivo de salida especificado por el usuario.
 
-# Variable para el archivo de salida
+#variable para el nombre de archivo de salida
 output_file=""
 
-# Leer argumentos
-while [ $# -gt 0 ]; do
-    case $1 in
-        -o) output_file=$2; shift 2 ;;  # Guardar el nombre del archivo de salida
-        *) echo "Uso: $0 -o archivo_salida"; exit 1 ;;
+#leemos los argumenots
+while getopts "o:" opcion; do
+    case $opcion in
+        o)
+            output_file=$OPTARG
+            ;;
+        *)
+            echo "Uso: $0 -o <archivo_salida.tsv>" >&2
+            exit 1
+            ;;
     esac
 done
 
@@ -22,19 +28,22 @@ if [ -z "$output_file" ]; then
     exit 1
 fi
 
-# Procesar la entrada y generar el reporte
-# Entradas: datos por stdin
-# Salidas: archivo con metadatos + datos
-# Descripción: escribe la fecha, usuario y host como comentarios luego agrega la entrada completa en el archivo de salida
+#obtenemos los metadatos
+usuario=$(whoami)
+host=$(hostname)
+
+
+#Entradas: datos por stdin
+#Salidas: archivo con metadatos + datos
+#Descripcion: escribe la fecha, usuario y host como comentarios luego agrega toda la entrada
 {
-    echo "# Reporte generado: $(date '+%Y-%m-%dT%H:%M:%S%z')"
-    echo "# Usuario: $USER"
-    echo "# Host: ${HOSTNAME:-$(hostname)}"
-    while read linea; do
-        echo "$linea"
-    done
+    echo "# Reporte generado: $(date +"%Y-%m-%dT%H:%M:%S+00:00")"
+    echo "# user: $usuario"
+    echo "# host: $host"
+    
+    #agregar todos los datos de stdin
+    cat
+    
 } > "$output_file"
 
-# Mensaje de confirmacion de creacion de archivo
-echo "Reporte generado en: $output_file"
-                                 
+echo "Reporte guardado en: $output_file"
