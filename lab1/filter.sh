@@ -77,6 +77,6 @@ while read linea; do
     
     #si pasa todos los filtros anteriores se muestra la linea
     if [ "$pasa_filtros" = true ]; then
-        echo "$linea"
+        printf "%s\n" "$linea"
     fi
 done
