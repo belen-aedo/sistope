@@ -70,7 +70,7 @@ while read linea; do
     
     #expresion regular 
     if [ -n "$expre" ]; then
-        if ! echo "$comm" | grep -E -q "$expre"; then
+        if ! echo "$comm" | grep -E -q "^${expre}$"; then
             pasa_filtros=false
         fi
     fi
