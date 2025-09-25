@@ -22,11 +22,12 @@ while getopts "o:" opcion; do
     esac
 done
 
-# Validar que se haya dado un archivo de salida
-if [ -z "$output_file" ]; then
-    echo "Debes especificar un nombre para el archivo de salida con -o NOMBRE_ARCHIVO"
+# Validar que se haya generado un archivo de salida con nombre, y ademas este sea especificamente "reporte.tsv"
+if [ -z "$output_file" ] || [ "$output_file" != "reporte.tsv" ]; then
+    echo "Debes especificar -o reporte.tsv como archivo de salida" >&2
     exit 1
 fi
+
 
 #obtenemos los metadatos
 usuario=$(whoami)

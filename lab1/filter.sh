@@ -70,13 +70,13 @@ while read linea; do
     
     #expresion regular 
     if [ -n "$expre" ]; then
-        if ! echo "$comm" | grep -E -q "$expre"; then
+        if ! echo "$comm" | grep -E -q "^${expre}$"; then
             pasa_filtros=false
         fi
     fi
     
     #si pasa todos los filtros anteriores se muestra la linea
     if [ "$pasa_filtros" = true ]; then
-        echo "$linea"
+        printf "%s\n" "$linea"
     fi
 done
