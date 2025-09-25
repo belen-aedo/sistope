@@ -30,8 +30,11 @@ fi
     echo "# Reporte generado: $(date '+%Y-%m-%dT%H:%M:%S%z')"
     echo "# Usuario: $USER"
     echo "# Host: ${HOSTNAME:-$(hostname)}"
-    cat
+    while read linea; do
+        echo "$linea"
+    done
 } > "$output_file"
 
 # Mensaje de confirmacion de creacion de archivo
 echo "Reporte generado en: $output_file"
+                                 
