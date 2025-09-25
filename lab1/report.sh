@@ -22,9 +22,9 @@ while getopts "o:" opcion; do
     esac
 done
 
-# Validar que se haya generado un archivo de salida con nombre, y ademas este sea especificamente "reporte.tsv"
-if [ -z "$output_file" ] || [ "$output_file" != "reporte.tsv" ]; then
-    echo "Debes especificar -o reporte.tsv como archivo de salida" >&2
+# Validar que se haya generado un archivo de salida con nombre, y ademas este sea especificamente "reporte.tsv", o "reporte.csv"
+if [ -z "$output_file" ] || { [ "$output_file" != "reporte.tsv" ] && [ "$output_file" != "reporte.csv" ]; }; then
+    echo "Debes especificar -o reporte.tsv o -o reporte.csv como archivo de salida" >&2
     exit 1
 fi
 
