@@ -9,20 +9,30 @@ mem_min=""
 expre=""
 
 #leemos los argumentos dados por el usuario
-while [ $# -gt 0 ]; do
-    case $1 in
-        -c) cpu_min=$2; shift 2 ;; #eliminamos 2 elementos con el shift
-        -m) mem_min=$2; shift 2 ;; #pasamos a los siguientes 2 y eliminamos
-        -r) expre=$2; shift 2 ;; #pasamos a los siguientes 2 y eliminamos
-        *) echo "El ingreso de los datos es: $0 [-c CPU] [-m MEM] [-r EXPRE]" >&2; exit 1 ;;
-    esac
-done
 
+while getopts "c:m:r:" opcion; do
+    case $opcion in
+        c) cpu_min="$OPTARG" #asignamos el valor de la cpu minima
+           if ! [[ "$cpu_min" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then #veremos si es entero o con decimal positivo
+               echo "la CPU debe ser un numero positivo" >&2
+               exit 1
+           fi ;;
+        m) mem_min="$OPTARG"
+           if ! [[ "$mem_min" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then #veremos si es entero o con decimal positivo
+               echo "la memoria debe ser un numero positivo" >&2
+               exit 1
+           fi ;;
+        r) expre="$OPTARG" ;; #asignamos la expresion regular
+        *) echo "El ingreso de los datos debe ser de la siguiente forma: -c <cpu> -m <mem> -r <'^(expre)"
+        
+            exit 1;;
+	esac
+done
 #funcion la cual sirve para verificar si un numero es mayor o igual, y vemos si cumple con las condiciones
 #entradas: $1 = numero1, $2 = numero2
 #salidas: 0 si num1 >= num2, 1 si no
 #descripcion: compara dos numeros decimales
-comparacion() {
+comparar_numeros() {
     local num1="$1"
     local num2="$2"
     
@@ -51,19 +61,24 @@ while read linea; do
     pcpu=$(echo "$linea" | cut -d$'\t' -f5)
     pmem=$(echo "$linea" | cut -d$'\t' -f6)
     
+    #verificar que los campos no esten vacios
+    if [ -z "$tiempo" ] || [ -z "$pid" ] || [ -z "$uid" ] || [ -z "$comm" ] || [ -z "$pcpu" ] || [ -z "$pmem" ]; then
+        continue
+    fi
+    
     #bandera para ver si pasa los filtros
     pasa_filtros=true
     
     #cpu minima
     if [ -n "$cpu_min" ]; then
-        if ! comparacion "$pcpu" "$cpu_min"; then
+        if ! comparar_numeros "$pcpu" "$cpu_min"; then
             pasa_filtros=false
         fi
     fi
     
     #memoria minima
     if [ -n "$mem_min" ]; then
-        if ! comparacion "$pmem" "$mem_min"; then
+        if ! comparar_numeros "$pmem" "$mem_min"; then
             pasa_filtros=false
         fi
     fi
