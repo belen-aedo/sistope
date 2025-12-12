@@ -2,7 +2,7 @@
 # Integrantes: [NOMBRE1] (RUT1) - [NOMBRE2] (RUT2)
 
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99
+CFLAGS = -Wall -Wextra -std=c99 -g
 LDFLAGS = 
 
 TARGET = lab2
@@ -21,4 +21,8 @@ $(TARGET): $(OBJECTS)
 clean:
 	rm -f $(TARGET) $(OBJECTS)
 
-.PHONY: all clean
+run: $(TARGET)
+	chmod +x *.sh 2>/dev/null || true
+	./$(TARGET) "./generator.sh -i 1 -t 2 | ./preprocess.sh | ./filter.sh -c 1.0 | ./aggregate.sh | ./report.sh -o reporte.tsv"
+
+.PHONY: all clean run

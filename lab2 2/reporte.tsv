@@ -1,0 +1,12 @@
+# Reporte generado: 2025-12-11T21:35:41+00:00
+# user: Jordan
+# host: 
+[PID 37416] Ejecutando: ./aggregate.sh 
+command	nproc	cpu_avg	cpu_max	mem_avg	mem_max
+java	2	1.1	1.1	1.4	1.4
+brave	18	7.0	19.1	1.0	1.3
+preprocess.sh	1	6.1	6.1	0.0	0.0
+filter.sh	1	11.8	11.8	0.0	0.0
+com.docker.back	2	2.5	2.5	0.5	0.5
+gnome-shell	2	14.9	14.9	1.2	1.2
+code	6	2.3	4.1	0.8	1.1
