@@ -27,25 +27,24 @@ make
 
 
 Antes de ejecutar el pipeline, es necesario otorgar permisos de ejecucion a los scripts:
-
 chmod +x *.sh
+
 
 ejemplos de ejecutar: 
 ejemplo de ejecucion filtrando por firefox
 ./lab2 "./generator.sh -i 1 -t 2 | ./preprocess.sh | ./filter.sh -c 1.0 -r firefox | ./aggregate.sh | ./report.sh -o reporte.tsv"
 
 
+
 las funciones usan :
 fork() para crear procesos
-
 pipe() para la comunicacion entre procesos
-
 dup2() para redireccionar stdin y stdout
-
 execvp() para ejecutar los scripts
-
 wait() para sincronizar los procesos
 
-Al finalizar la ejecucion del pipeline, se genera el archivo:
 
+
+
+Al finalizar la ejecucion del pipeline, se genera el archivo:
 reporte.tsv o reporte.csv
