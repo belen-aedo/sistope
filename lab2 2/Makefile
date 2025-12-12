@@ -1,6 +1,5 @@
 # Makefile para Laboratorio 2 - Sistemas Operativos
-#Belen Aedo - 21.556.446-0·
-
+#Belen Aedo - 21.556.446-0
 #Jordán Arias - 21.317.055-4
 
 CC = gcc
