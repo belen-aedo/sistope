@@ -1,229 +1,210 @@
+//Belen Aedo - 21.556.446-0
+//Jordán Arias - 21.317.055-4
+
+
 #include "funciones.h"
 #include <ctype.h>
 
-// Función auxiliar para duplicar string
-char* duplicar_string(const char* src) {
-    if (!src) return NULL;
-    char* dst = malloc(strlen(src) + 1);
-    if (dst) strcpy(dst, src);
-    return dst;
+/*
+ entradas: texto 
+ salidas: puntero a un nuevo string en memoria
+ descripcion:
+ esta funcion recibe un string y crea una copia usando memoria dinamica.
+ se utiliza para guardar los argumentos de cada comando sin perderlos.
+ */
+char *copiar_string(const char *texto) {
+    char *copia;
+
+    // validar que el texto exista
+    if (texto == NULL) {
+        return NULL;
+    }
+
+    // reservar memoria para el nuevo string
+    copia = malloc(strlen(texto) + 1);
+    if (copia == NULL) {
+        return NULL;
+    }
+
+    // copiar el contenido del string original
+    strcpy(copia, texto);
+
+    return copia;
 }
 
-// Función para parsear una línea de comando respetando comillas
-int parsear_comando(const char* cmd_line, Comando* comando) {
-    char copia[MAX_LONGITUD];
-    strncpy(copia, cmd_line, MAX_LONGITUD - 1);
-    copia[MAX_LONGITUD - 1] = '\0';
-    
-    comando->num_args = 0;
-    memset(comando->argumentos, 0, sizeof(comando->argumentos));
-    
-    int i = 0;
-    int en_comillas = 0;
-    char comilla_char = 0;
-    char buffer[MAX_LONGITUD] = {0};
-    int buf_idx = 0;
-    
-    while (copia[i] != '\0') {
-        if (copia[i] == '"' || copia[i] == '\'') {
-            if (!en_comillas) {
-                en_comillas = 1;
-                comilla_char = copia[i];
-            } else if (comilla_char == copia[i]) {
-                en_comillas = 0;
-            } else {
-                // Comilla dentro de comillas
-                buffer[buf_idx++] = copia[i];
+/*
+ entradas: linea de texto con un solo comando
+ salidas: estructura comando cargada con nombre y argumentos
+ descripcion:
+ separa un comando en palabras (argumentos).
+ respeta espacios y permite usar comillas simples o dobles.
+ */
+int separar_comando(const char *linea, Comando *cmd) {
+    char linea_copia[MAX_LONGITUD];   // copia local de la linea
+    char palabra[MAX_LONGITUD];       // buffer para cada argumento
+    int i = 0;                        // indice de la linea
+    int indice_palabra = 0;           // indice del buffer palabra
+    int dentro_comillas = 0;          // indica si estamos dentro de comillas
+    char tipo_comilla = 0;            // tipo de comilla usada
+
+    // copiar la linea original para no modificarla
+    strncpy(linea_copia, linea, MAX_LONGITUD - 1);
+    linea_copia[MAX_LONGITUD - 1] = '\0';
+
+    // inicializar cantidad de argumentos
+    cmd->num_args = 0;
+
+    // recorrer caracter por caracter la linea
+    while (linea_copia[i] != '\0') {
+
+        // detectar inicio de comillas
+        if ((linea_copia[i] == '"' || linea_copia[i] == '\'') && !dentro_comillas) {
+            dentro_comillas = 1;
+            tipo_comilla = linea_copia[i];
+        }
+        // detectar cierre de comillas
+        else if (linea_copia[i] == tipo_comilla && dentro_comillas) {
+            dentro_comillas = 0;
+        }
+        // detectar separacion por espacios cuando no estamos en comillas
+        else if (isspace(linea_copia[i]) && !dentro_comillas) {
+            if (indice_palabra > 0) {
+                // cerrar el argumento actual
+                palabra[indice_palabra] = '\0';
+                cmd->argumentos[cmd->num_args++] = copiar_string(palabra);
+                indice_palabra = 0;
             }
-            i++;
-        } else if (isspace(copia[i]) && !en_comillas) {
-            // Fin de un argumento
-            if (buf_idx > 0) {
-                buffer[buf_idx] = '\0';
-                comando->argumentos[comando->num_args] = duplicar_string(buffer);
-                if (!comando->argumentos[comando->num_args]) {
-                    return -1;
-                }
-                comando->num_args++;
-                buf_idx = 0;
-            }
-            i++;
-        } else {
-            buffer[buf_idx++] = copia[i];
-            i++;
         }
-    }
-    
-    // Último argumento si queda algo en el buffer
-    if (buf_idx > 0) {
-        buffer[buf_idx] = '\0';
-        comando->argumentos[comando->num_args] = duplicar_string(buffer);
-        if (!comando->argumentos[comando->num_args]) {
-            return -1;
+        // agregar caracter al argumento actual
+        else {
+            palabra[indice_palabra++] = linea_copia[i];
         }
-        comando->num_args++;
+
+        i++;
     }
-    
-    if (comando->num_args > 0) {
-        comando->nombre = duplicar_string(comando->argumentos[0]);
-        if (!comando->nombre) {
-            return -1;
-        }
+
+    // guardar el ultimo argumento si existe
+    if (indice_palabra > 0) {
+        palabra[indice_palabra] = '\0';
+        cmd->argumentos[cmd->num_args++] = copiar_string(palabra);
     }
-    
+
+    // marcar el final de los argumentos para execvp
+    cmd->argumentos[cmd->num_args] = NULL;
+
+    // el nombre del comando es el primer argumento
+    cmd->nombre = cmd->argumentos[0];
+
     return 0;
 }
 
-int parsear_linea(const char* linea, Pipeline* pipeline) {
-    char copia[MAX_LONGITUD];
-    strncpy(copia, linea, MAX_LONGITUD - 1);
-    copia[MAX_LONGITUD - 1] = '\0';
-    
+/*
+ entradas: linea completa ingresada por el usuario
+ salidas: estructura pipeline cargada
+ descripcion:
+ separa la linea completa usando el caracter pipe '|'
+ y guarda cada comando en el pipeline.
+ */
+int separar_pipeline(const char *linea, Pipeline *pipeline) {
+    char linea_copia[MAX_LONGITUD];
+    char *token;
+    int indice = 0;
+
+    // copiar la linea original
+    strncpy(linea_copia, linea, MAX_LONGITUD - 1);
+    linea_copia[MAX_LONGITUD - 1] = '\0';
+
+    // inicializar cantidad de comandos
     pipeline->num_comandos = 0;
-    
-    // Separar por pipes, respetando que puedan estar entre comillas
-    char* inicio = copia;
-    char* ptr = copia;
-    int en_comillas = 0;
-    char comilla_char = 0;
-    
-    while (*ptr != '\0') {
-        if (*ptr == '"' || *ptr == '\'') {
-            if (!en_comillas) {
-                en_comillas = 1;
-                comilla_char = *ptr;
-            } else if (comilla_char == *ptr) {
-                en_comillas = 0;
-            }
-        } else if (*ptr == '|' && !en_comillas) {
-            // Encontramos un pipe que no está dentro de comillas
-            *ptr = '\0';
-            
-            if (pipeline->num_comandos >= MAX_COMANDOS) {
-                fprintf(stderr, "Error: Demasiados comandos (máximo %d)\n", MAX_COMANDOS);
-                return -1;
-            }
-            
-            // Parsear este comando
-            if (parsear_comando(inicio, &pipeline->comandos[pipeline->num_comandos]) == -1) {
-                fprintf(stderr, "Error parseando comando: %s\n", inicio);
-                return -1;
-            }
-            
-            pipeline->num_comandos++;
-            inicio = ptr + 1;
-        }
-        ptr++;
-    }
-    
-    // Parsear el último comando
-    if (*inicio != '\0') {
-        if (pipeline->num_comandos >= MAX_COMANDOS) {
-            fprintf(stderr, "Error: Demasiados comandos (máximo %d)\n", MAX_COMANDOS);
-            return -1;
-        }
-        
-        if (parsear_comando(inicio, &pipeline->comandos[pipeline->num_comandos]) == -1) {
-            fprintf(stderr, "Error parseando comando: %s\n", inicio);
-            return -1;
-        }
-        
+
+    // separar por pipes
+    token = strtok(linea_copia, "|");
+    while (token != NULL && pipeline->num_comandos < MAX_COMANDOS) {
+
+        // separar cada comando en argumentos
+        separar_comando(token, &pipeline->comandos[indice]);
+
         pipeline->num_comandos++;
+        indice++;
+
+        token = strtok(NULL, "|");
     }
-    
-    // DEBUG: Mostrar los comandos parseados
-    printf("\n=== COMANDOS PARSEADOS ===\n");
-    for (int i = 0; i < pipeline->num_comandos; i++) {
-        printf("Comando %d: %s\n", i+1, pipeline->comandos[i].nombre);
-        printf("  Argumentos (%d):", pipeline->comandos[i].num_args);
-        for (int j = 0; j < pipeline->comandos[i].num_args; j++) {
-            printf(" '%s'", pipeline->comandos[i].argumentos[j]);
-        }
-        printf("\n");
-    }
-    printf("==========================\n\n");
-    
+
     return 0;
 }
 
-int ejecutar_pipeline(Pipeline* pipeline) {
-    pid_t pids[MAX_COMANDOS];
-    
-    // Crear pipes
-    for (int i = 0; i < pipeline->num_comandos - 1; i++) {
-        if (pipe(pipeline->pipes[i]) == -1) {
-            perror("Error al crear pipe");
-            return -1;
-        }
+/*
+ entradas: pipeline con todos los comandos cargados
+ salidas: no retorna valor
+ descripcion:
+ crea los pipes necesarios, genera procesos hijos
+ y ejecuta cada script respetando el orden del pipeline.
+ */
+int ejecutar_pipeline(Pipeline *pipeline) {
+    int i;
+    pid_t pid;
+
+    // crear los pipes entre comandos
+    for (i = 0; i < pipeline->num_comandos - 1; i++) {
+        pipe(pipeline->pipes[i]);
     }
-    
-    // Crear procesos hijos
-    for (int i = 0; i < pipeline->num_comandos; i++) {
-        pids[i] = fork();
-        
-        if (pids[i] == -1) {
-            perror("Error en fork");
-            return -1;
-        }
-        
-        if (pids[i] == 0) { // Proceso hijo
-            // Configurar redirecciones
+
+    // crear un proceso hijo por cada comando
+    for (i = 0; i < pipeline->num_comandos; i++) {
+
+        pid = fork();
+
+        if (pid == 0) {
+            // proceso hijo
+
+            // si no es el primer comando, leer del pipe anterior
             if (i > 0) {
-                dup2(pipeline->pipes[i-1][0], STDIN_FILENO);
-                close(pipeline->pipes[i-1][0]);
+                dup2(pipeline->pipes[i - 1][0], STDIN_FILENO);
             }
-            
+
+            // si no es el ultimo comando, escribir al pipe siguiente
             if (i < pipeline->num_comandos - 1) {
                 dup2(pipeline->pipes[i][1], STDOUT_FILENO);
-                close(pipeline->pipes[i][1]);
             }
-            
-            // Cerrar todos los pipes
+
+            // cerrar todos los pipes en el hijo
             for (int j = 0; j < pipeline->num_comandos - 1; j++) {
                 close(pipeline->pipes[j][0]);
                 close(pipeline->pipes[j][1]);
             }
-            
-            // Preparar argumentos para execvp
-            char* args[MAX_ARGUMENTOS + 1];
-            for (int j = 0; j < pipeline->comandos[i].num_args; j++) {
-                args[j] = pipeline->comandos[i].argumentos[j];
-            }
-            args[pipeline->comandos[i].num_args] = NULL;
-            
-            // DEBUG
-            printf("[PID %d] Ejecutando: ", getpid());
-            for (int j = 0; args[j] != NULL; j++) {
-                printf("%s ", args[j]);
-            }
-            printf("\n");
-            
-            // Ejecutar comando
-            execvp(args[0], args);
-            
-            // Si execvp falla
-            perror("Error en execvp");
+
+            // ejecutar el script correspondiente
+            execvp(pipeline->comandos[i].argumentos[0],
+                   pipeline->comandos[i].argumentos);
+
+            // si execvp falla
+            perror("error en execvp");
             exit(1);
         }
     }
-    
-    // Proceso padre: cerrar todos los pipes
-    for (int i = 0; i < pipeline->num_comandos - 1; i++) {
+
+    // proceso padre: cerrar todos los pipes
+    for (i = 0; i < pipeline->num_comandos - 1; i++) {
         close(pipeline->pipes[i][0]);
         close(pipeline->pipes[i][1]);
     }
-    
-    // Esperar a todos los hijos
-    for (int i = 0; i < pipeline->num_comandos; i++) {
-        waitpid(pids[i], NULL, 0);
+
+    // esperar a que terminen todos los procesos hijos
+    for (i = 0; i < pipeline->num_comandos; i++) {
+        wait(NULL);
     }
-    
+
     return 0;
 }
 
-void liberar_pipeline(Pipeline* pipeline) {
+/*
+ entradas: pipeline utilizado
+ salidas: memoria liberada
+ descripcion:
+ libera la memoria reservada para los argumentos de cada comando.
+ */
+void liberar_pipeline(Pipeline *pipeline) {
     for (int i = 0; i < pipeline->num_comandos; i++) {
-        free(pipeline->comandos[i].nombre);
         for (int j = 0; j < pipeline->comandos[i].num_args; j++) {
             free(pipeline->comandos[i].argumentos[j]);
         }

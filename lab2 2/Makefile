@@ -1,5 +1,7 @@
 # Makefile para Laboratorio 2 - Sistemas Operativos
-# Integrantes: [NOMBRE1] (RUT1) - [NOMBRE2] (RUT2)
+#Belen Aedo - 21.556.446-0·
+
+#Jordán Arias - 21.317.055-4
 
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -g

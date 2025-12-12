@@ -1,5 +1,16 @@
+//Belen Aedo - 21.556.446-0
+//Jordán Arias - 21.317.055-4
+
 #ifndef FUNCIONES_H
 #define FUNCIONES_H
+
+/*
+ archivo: funciones.h
+ descripcion:
+ archivo de cabecera que define las estructuras, constantes
+ y prototipos de funciones utilizadas para implementar
+ el pipeline de ejecucion de scripts.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,24 +21,63 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#define MAX_COMANDOS 6
-#define MAX_ARGUMENTOS 20
-#define MAX_LONGITUD 1024
+/*
+ constantes del sistema
+ */
+#define MAX_COMANDOS 6        // cantidad maxima de scripts en el pipeline
+#define MAX_ARGUMENTOS 20     // cantidad maxima de argumentos por comando
+#define MAX_LONGITUD 1024     // longitud maxima de una linea de entrada
 
+/*
+ estructura comando
+ descripcion:
+ almacena la informacion de un comando individual,
+ incluyendo su nombre y sus argumentos.
+ */
 typedef struct {
-    char *nombre;
-    char *argumentos[MAX_ARGUMENTOS];
-    int num_args;
+    char *nombre;                          // nombre del comando o script
+    char *argumentos[MAX_ARGUMENTOS + 1]; // lista de argumentos para execvp
+    int num_args;                          // cantidad de argumentos
 } Comando;
 
+/*
+ estructura pipeline
+ descripcion:
+ representa el pipeline completo, almacenando
+ los comandos, la cantidad total y los pipes
+ necesarios para la comunicacion entre procesos.
+ */
 typedef struct {
-    Comando comandos[MAX_COMANDOS];
-    int num_comandos;
-    int pipes[MAX_COMANDOS - 1][2];
+    Comando comandos[MAX_COMANDOS];          // arreglo de comandos
+    int num_comandos;                        // cantidad de comandos en el pipeline
+    int pipes[MAX_COMANDOS - 1][2];          // pipes para comunicacion entre comandos
 } Pipeline;
 
-int parsear_linea(const char* linea, Pipeline* pipeline);
-int ejecutar_pipeline(Pipeline* pipeline);
-void liberar_pipeline(Pipeline* pipeline);
+/*
+ entradas: linea completa ingresada por el usuario
+ salidas: pipeline cargado con los comandos
+ descripcion:
+ separa la linea usando pipes y guarda cada comando
+ dentro de la estructura pipeline.
+ */
+int separar_pipeline(const char *linea, Pipeline *pipeline);
+
+/*
+ entradas: pipeline con comandos cargados
+ salidas: no retorna valor
+ descripcion:
+ crea procesos, configura pipes y ejecuta los scripts
+ respetando el orden del pipeline.
+ */
+int ejecutar_pipeline(Pipeline *pipeline);
+
+/*
+ entradas: pipeline utilizado
+ salidas: memoria liberada
+ descripcion:
+ libera la memoria reservada para los argumentos
+ de cada comando del pipeline.
+ */
+void liberar_pipeline(Pipeline *pipeline);
 
 #endif
