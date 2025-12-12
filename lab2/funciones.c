@@ -9,9 +9,9 @@
 #include <sys/wait.h>
 #include "funciones.h"
 
-//Entradas: line es la línea completa ingresada por el usuario con los comandos separados por "|", cmds[] donde se almacenarán los comandos
-// Salidas:Retorna la cantidad total de comandos encontrados
-// Descripción: Separa la línea según "|" y divide cada comando en palabras,construyendo argv[] para que execvp() pueda ejecutarlos.
+//Entradas: line es la linea completa ingresada por el usuario con los comandos separados por "|", cmds[] donde se almacenarán los comandos
+//Salidas:Retorna la cantidad total de comandos encontrados
+//Descripción: Separa la lsinea según "|" y divide cada comando en palabras,construyendo argv[] para que execvp() pueda ejecutarlos.
 int procesarPipeline(char *line, Command cmds[]) {
     int cont_comandos = 0;  //contador de comandos encontrados en la linea
 
@@ -70,9 +70,13 @@ void ejecutarPipeline(Command cmds[], int cont_comandos) {
     int pipes[cont_comandos - 1][2];
 
     //creamos los pipes necesarios
-    for(int i = 0; i < cont_comandos - 1; i++) {
-        pipe(pipes[i]);
+    for (int i = 0; i < cont_comandos - 1; i++) {
+        if (pipe(pipes[i]) == -1) {
+            perror("pipe");
+            exit(1);
+        }
     }
+
 
     //crear un proceso por cada comando usando fork
     for(int i = 0; i < cont_comandos; i++) {
@@ -106,7 +110,8 @@ void ejecutarPipeline(Command cmds[], int cont_comandos) {
     }
 
     //cerramos todos los pipes en el padre
-    for(int i = 0; i < ncmd - 1; i++) {
+    for(int i = 0; i < cont_comandos - 1; i++) {
+{
         close(pipes[i][0]);
         close(pipes[i][1]);
     }
@@ -115,4 +120,5 @@ void ejecutarPipeline(Command cmds[], int cont_comandos) {
     for(int i = 0; i < cont_comandos; i++) {
         wait(NULL);
     }
+}
 }

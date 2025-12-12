@@ -10,22 +10,26 @@
 int main() {
 
     char input[1024];
-
-    printf("Ingresa el pipeline (ejemplo):\n");
-    printf("./generator.sh -i 1 -t 5 | ./preprocess.sh | ./transform.sh --anon-uid\n\n");
-
-    printf("> ");
-    fgets(input, sizeof(input), stdin);
-
     Command cmds[MAX_CMDS];
-    int cont_comandos = procesarPipeline(input, cmds);
 
-    if(cont_comandos <= 0) {
-        printf("No se encontraron comandos.\n");
-        return 1;
+    
+    while (1) {
+
+        printf("lab2> ");
+        fflush(stdout);
+
+        //leer entrada del usuario
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            break;
+        }
+
+        //procesar la línea de comandos
+        int cont_comandos = procesarPipeline(input, cmds);
+
+        if (cont_comandos > 0) {
+            ejecutarPipeline(cmds, cont_comandos);
+        }
     }
-
-    ejecutarPipeline(cmds, cont_comandos);
 
     return 0;
 }
