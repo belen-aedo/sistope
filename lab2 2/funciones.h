@@ -1,10 +1,3 @@
-/**
- * Laboratorio 2: Monitoreo y Procesamiento de Procesos
- * Sistemas Operativos - Segundo Semestre 2025
- * 
- * Integrantes: [NOMBRE1] (RUT1) - [NOMBRE2] (RUT2)
- */
-
 #ifndef FUNCIONES_H
 #define FUNCIONES_H
 
